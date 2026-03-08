@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageCircle, BookOpen, ClipboardList, HelpCircle, Phone, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import nsukLogo from "@/assets/nsuk-logo.png";
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 import nsukCampus from "@/assets/nsuk-campus.jpg";
 
 const features = [
