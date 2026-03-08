@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import nsukLogo from "@/assets/nsuk-logo.png";
 
 const navItems = [
   { label: "Home", path: "/" },
