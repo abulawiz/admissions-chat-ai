@@ -6,6 +6,7 @@ import { ChatInput } from "@/components/ChatInput";
 import { streamChat, type Msg } from "@/lib/streamChat";
 import { toast } from "sonner";
 import { GraduationCap, BookOpen, ClipboardList, DollarSign, FileText, Phone } from "lucide-react";
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 const quickActions = [
   { icon: ClipboardList, text: "Admission Requirements" },
