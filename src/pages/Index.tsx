@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageCircle, BookOpen, ClipboardList, HelpCircle, Phone, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import nsukLogo from "@/assets/nsuk-logo.png";
+import nsukCampus from "@/assets/nsuk-campus.jpg";
 
 const features = [
   { icon: MessageCircle, title: "AI Chat Assistant", desc: "Get instant answers to your admission questions 24/7", link: "/chat" },
@@ -16,20 +18,18 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative nsuk-gradient py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-40 h-40 rounded-full border-2 border-primary-foreground/30" />
-          <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full border-2 border-primary-foreground/20" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-primary-foreground/10" />
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={nsukCampus} alt="NSUK Campus" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 hero-overlay" />
         </div>
         <div className="container mx-auto px-4 relative z-10 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-24 h-24 rounded-full gold-gradient flex items-center justify-center mx-auto mb-6 shadow-xl"
           >
-            <GraduationCap className="w-12 h-12 text-accent-foreground" />
+            <img src={nsukLogo} alt="NSUK Logo" className="w-24 h-24 rounded-full bg-primary-foreground/90 object-contain mx-auto mb-6 shadow-xl p-1" />
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import nsukLogo from "@/assets/nsuk-logo.png";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -20,9 +21,7 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-accent-foreground" />
-            </div>
+            <img src={nsukLogo} alt="NSUK Logo" className="w-10 h-10 rounded-full object-contain bg-primary-foreground" />
             <div className="hidden sm:block">
               <span className="font-display text-sm font-bold text-primary-foreground leading-tight block">NSUK</span>
               <span className="text-[10px] text-primary-foreground/70 font-body">Admission Guide</span>
