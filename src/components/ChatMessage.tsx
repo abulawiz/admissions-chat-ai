@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { GraduationCap, User } from "lucide-react";
+import { User } from "lucide-react";
 import type { Msg } from "@/lib/streamChat";
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 export function ChatMessage({ message }: { message: Msg }) {
   const isUser = message.role === "user";
