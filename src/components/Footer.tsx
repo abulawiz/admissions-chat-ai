@@ -1,5 +1,5 @@
-import { GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 export function Footer() {
   return (
@@ -8,9 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-accent-foreground" />
-              </div>
+              <img src={nsukLogo} alt="NSUK Logo" className="w-10 h-10 rounded-full object-contain bg-primary-foreground" />
               <div>
                 <span className="font-display text-sm font-bold block">Nasarawa State University</span>
                 <span className="text-xs text-primary-foreground/70 font-body">Keffi, Nigeria</span>
