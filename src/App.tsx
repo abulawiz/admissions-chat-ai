@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import AdmissionGuide from "./pages/AdmissionGuide";
 import ChatPage from "./pages/ChatPage";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import FAQs from "./pages/FAQs";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
