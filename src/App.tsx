@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import AdmissionGuide from "./pages/AdmissionGuide";
 import ChatPage from "./pages/ChatPage";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import FAQs from "./pages/FAQs";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/chat/:conversationId" element={<ChatPage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/faqs" element={<FAQs />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="*" element={<NotFound />} />
