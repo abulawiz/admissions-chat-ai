@@ -1,5 +1,5 @@
-import { GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 export function Footer() {
   return (
