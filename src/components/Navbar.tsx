@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/AuthProvider";
 import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 const navItems = [
@@ -15,6 +16,17 @@ const navItems = [
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleAuth = async () => {
+    if (user) {
+      await signOut();
+      navigate("/");
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <nav className="nsuk-gradient-dark sticky top-0 z-50 shadow-lg">
@@ -43,6 +55,15 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAuth}
+              className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2 ml-2"
+            >
+              {user ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
+              {user ? "Sign Out" : "Sign In"}
+            </Button>
           </div>
 
           {/* Mobile toggle */}
@@ -73,6 +94,12 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <button
+              onClick={() => { setOpen(false); handleAuth(); }}
+              className="block w-full text-left px-3 py-2 rounded-lg text-sm font-body font-medium text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors"
+            >
+              {user ? "Sign Out" : "Sign In"}
+            </button>
           </div>
         )}
       </div>
