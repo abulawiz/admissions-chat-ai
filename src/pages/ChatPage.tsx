@@ -104,18 +104,28 @@ const ChatPage = () => {
                 <ChatMessage key={i} message={msg} />
               ))}
               {isLoading && messages[messages.length - 1]?.role === "user" && (
-                <div className="flex gap-3">
-                  <div className="w-9 h-9 rounded-full nsuk-gradient flex items-center justify-center flex-shrink-0">
-                    <span className="block w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex gap-3"
+                >
+                  <div className="w-9 h-9 rounded-full gold-gradient flex items-center justify-center flex-shrink-0">
+                    <img src={nsukLogo} alt="NSUK" className="w-5 h-5 rounded-full object-contain" />
                   </div>
-                  <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border shadow-sm">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="bg-chat-bot text-chat-bot-foreground rounded-2xl rounded-tl-sm px-4 py-3 border border-border shadow-sm">
+                    <div className="flex items-center gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <motion.span
+                          key={i}
+                          className="w-2 h-2 rounded-full bg-primary"
+                          animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }}
+                          transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+                        />
+                      ))}
+                      <span className="text-xs text-muted-foreground ml-2">Typing...</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           )}
