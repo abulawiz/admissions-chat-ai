@@ -15,7 +15,7 @@ export function ChatMessage({ message }: { message: Msg }) {
     >
       <div
         className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
-          isUser ? "chat-gradient" : "gold-gradient"
+          isUser ? "nsuk-gradient" : "gold-gradient"
         }`}
       >
         {isUser ? (

@@ -21,7 +21,7 @@ export function ChatInput({
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-2 flex items-end gap-2">
+    <div className="bg-card rounded-2xl border border-border p-2 flex items-end gap-2 shadow-sm">
       <textarea
         ref={inputRef}
         value={value}
@@ -32,7 +32,7 @@ export function ChatInput({
             handleSubmit();
           }
         }}
-        placeholder="Ask about admissions, programs, deadlines..."
+        placeholder="Ask about admissions, courses, JAMB..."
         className="flex-1 resize-none bg-transparent border-0 outline-none p-2 text-foreground placeholder:text-muted-foreground font-body text-sm min-h-[40px] max-h-[120px]"
         rows={1}
         disabled={disabled}
@@ -41,9 +41,9 @@ export function ChatInput({
         onClick={handleSubmit}
         disabled={disabled || !value.trim()}
         size="icon"
-        className="rounded-xl chat-gradient hover:opacity-90 transition-opacity h-10 w-10 flex-shrink-0"
+        className="rounded-xl nsuk-gradient hover:opacity-90 transition-opacity h-10 w-10 flex-shrink-0"
       >
-        <Send className="w-4 h-4" />
+        <Send className="w-4 h-4 text-primary-foreground" />
       </Button>
     </div>
   );
