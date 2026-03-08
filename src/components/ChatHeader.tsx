@@ -1,5 +1,4 @@
-import { GraduationCap } from "lucide-react";
-
+import nsukLogo from "@/assets/nsuk-logo.jpg";
 export function ChatHeader() {
   return (
     <header className="nsuk-gradient px-6 py-4 flex items-center gap-3">
