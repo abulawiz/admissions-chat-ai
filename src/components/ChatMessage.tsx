@@ -21,7 +21,9 @@ export function ChatMessage({ message }: { message: Msg }) {
       >
         {isUser ? (
           <User className="w-4 h-4 text-primary-foreground" />
+        ) : (
           <img src={nsukLogo} alt="NSUK" className="w-5 h-5 rounded-full object-contain" />
+        )}
       </div>
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-3 ${
