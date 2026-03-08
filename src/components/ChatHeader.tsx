@@ -2,9 +2,7 @@ import nsukLogo from "@/assets/nsuk-logo.jpg";
 export function ChatHeader() {
   return (
     <header className="nsuk-gradient px-6 py-4 flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center shadow-sm">
-        <GraduationCap className="w-5 h-5 text-accent-foreground" />
-      </div>
+      <img src={nsukLogo} alt="NSUK Logo" className="w-10 h-10 rounded-full object-contain bg-primary-foreground shadow-sm" />
       <div>
         <h2 className="font-display text-base font-bold text-primary-foreground leading-tight">
           NSUK Admission Assistant
