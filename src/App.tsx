@@ -31,6 +31,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/admission-guide" element={<AdmissionGuide />} />
+                <Route path="/faculties" element={<FacultiesDepartments />} />
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/chat/:conversationId" element={<ChatPage />} />
                 <Route path="/auth" element={<AuthPage />} />

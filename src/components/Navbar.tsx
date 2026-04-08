@@ -8,6 +8,7 @@ import nsukLogo from "@/assets/nsuk-logo.jpg";
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Admission Guide", path: "/admission-guide" },
+  { label: "Faculties", path: "/faculties" },
   { label: "Chat with AI", path: "/chat" },
   { label: "FAQs", path: "/faqs" },
   { label: "Contact", path: "/contact" },
