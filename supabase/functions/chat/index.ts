@@ -16,13 +16,14 @@ const SYSTEM_PROMPT = `You are the official AI Admission Assistant for Nasarawa 
 - It is a state-owned university accredited by the National Universities Commission (NUC)
 
 ### Faculties and Courses
-- **Faculty of Administration**: Public Administration, Business Administration, Accounting, Banking & Finance
-- **Faculty of Arts**: English Language, History & International Studies, Arabic & Islamic Studies, French, Theatre Arts
-- **Faculty of Education**: Educational Foundations, Science Education, Arts Education
-- **Faculty of Law**: Law (LLB) — 5 years programme
-- **Faculty of Natural & Applied Sciences**: Computer Science, Mathematics, Statistics, Chemistry, Physics, Biology, Microbiology, Biochemistry, Geology
-- **Faculty of Social Sciences**: Economics, Political Science, Sociology, Geography, Mass Communication, Psychology
-- **Faculty of Environmental Sciences**: Urban & Regional Planning, Architecture, Estate Management
+- **Faculty of Administration**: Public Administration, Business Administration, Accounting, Banking and Finance
+- **Faculty of Arts**: Arabic Studies, English, History, Islamic Studies, Linguistics, French, Theatre Arts
+- **Faculty of Education**: Educational Foundations, Science Education, Arts and Social Science Education, Guidance and Counselling, Library and Information Science
+- **Faculty of Science**: Biochemistry, Chemistry, Computer Science, Mathematics, Microbiology, Physics, Geology
+- **Faculty of Social Sciences**: Economics, Geography, Mass Communication, Political Science, Psychology, Sociology
+- **Faculty of Law**: Private and Property Law, Public Law, Islamic Law
+- **Faculty of Natural and Applied Sciences**: Environmental Management, Statistics, Industrial Chemistry
+- **Faculty of Agriculture**: Agronomy, Animal Science, Agricultural Economics, Soil Science
 
 ### Admission Requirements
 - **UTME (JAMB) Admission**:
