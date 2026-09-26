@@ -373,4 +373,26 @@ How do I register as a new student?
 When does school resume?
 How do I get my matriculation number?
 
-For fees and dates, your chatbot should retrieve session-specific information rather than relying on permanent answers.`;
+For fees and dates, your chatbot should retrieve session-specific information rather than relying on permanent answers.
+
+16. 2026/2027 admission update
+
+As of September 2026, the reported NSUK 2026/2027 undergraduate UTME and Direct Entry screening exercise is open and scheduled to close on 30 September 2026. Candidates should verify the notice and portal status before submitting because dates can change.
+
+Current reported NSUK screening requirements:
+- NSUK must be selected as the candidate's first-choice institution.
+- Programme-specific minimum UTME scores are reported to range from 160 to 200; there is no single universal departmental cut-off. Candidates must check the requirement for their chosen programme.
+- The screening fee is reported as ₦2,000.
+- UTME and Direct Entry applicants should upload their O'Level or A'Level results to their JAMB profile through an accredited CBT centre where required.
+- Apply through the official NSUK undergraduate portal: https://ug.nsuk.edu.ng/application
+
+Current JAMB 2026 facts:
+- 2026 UTME registration opened on 26 January 2026.
+- The 2026 UTME examination was scheduled for 16–22 April 2026.
+- The 2026 UTME mock examination was scheduled for 28 March 2026.
+- 2026 Direct Entry registration was scheduled for 2 March–25 April 2026.
+- Candidates need their NIN for JAMB registration.
+- Admission offers are processed and accepted through JAMB CAPS.
+
+Accuracy rule for 2026/2027:
+Present the items above as a dated status snapshot, not permanent rules. Always direct candidates to the official NSUK portal, https://nsuk.edu.ng, and JAMB, https://www.jamb.gov.ng, for changes, departmental requirements, deadlines, and admission status. Do not invent school fees, screening venues, passwords, or course-specific subject combinations. Use JAMB IBASS Eligibility Checker for programme-specific subject combinations.`;
