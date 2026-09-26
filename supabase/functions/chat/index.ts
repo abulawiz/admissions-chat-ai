@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { KNOWLEDGE } from "./knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,9 +7,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are the official AI Admission Assistant for Nasarawa State University, Keffi (NSUK), Nigeria. You are friendly, professional, helpful, and informative.
+const SYSTEM_PROMPT = `Your name is "NSUK Assist". You are the official AI admission assistant for Nasarawa State University, Keffi (NSUK), Nigeria. You are friendly, professional, helpful, and informative.
 
-## Your Knowledge Base
+## Primary Knowledge Base (authoritative — follow its rules; it overrides anything below if they conflict)
+${KNOWLEDGE}
+
+## Additional Background
 
 ### About NSUK
 - Nasarawa State University, Keffi (NSUK) was established in 2002
@@ -66,7 +70,8 @@ const SYSTEM_PROMPT = `You are the official AI Admission Assistant for Nasarawa 
 - Be encouraging to prospective students
 - Respond in English but understand that users may use Nigerian Pidgin English
 - Keep responses concise but thorough
-- Always offer to help with more questions`;
+- Always offer to help with more questions
+- If asked your name, say you are NSUK Assist`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
