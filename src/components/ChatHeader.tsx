@@ -5,7 +5,7 @@ export function ChatHeader() {
       <img src={nsukLogo} alt="NSUK Logo" className="w-10 h-10 rounded-full object-contain bg-primary-foreground shadow-sm" />
       <div>
         <h2 className="font-display text-base font-bold text-primary-foreground leading-tight">
-          NSUK Admission Assistant
+          NSUK Assist
         </h2>
         <p className="text-xs text-primary-foreground/70 font-body">AI-powered • Available 24/7</p>
       </div>
