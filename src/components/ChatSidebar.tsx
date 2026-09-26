@@ -42,13 +42,19 @@ export function ChatSidebar() {
   };
 
   useEffect(() => {
+    if (!user) return;
     fetchConversations();
 
     const channel = supabase
       .channel("conversations-changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
+        {
+          event: "*",
+          schema: "public",
+          table: "conversations",
+          filter: `user_id=eq.${user.id}`,
+        },
         () => fetchConversations()
       )
       .subscribe();
