@@ -1,10 +1,11 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { User } from "lucide-react";
 import type { Msg } from "@/lib/streamChat";
 import nsukLogo from "@/assets/nsuk-logo.jpg";
 
-export function ChatMessage({ message }: { message: Msg }) {
+function ChatMessageBase({ message }: { message: Msg }) {
   const isUser = message.role === "user";
 
   return (
@@ -39,3 +40,10 @@ export function ChatMessage({ message }: { message: Msg }) {
     </motion.div>
   );
 }
+
+export const ChatMessage = memo(
+  ChatMessageBase,
+  (prev, next) =>
+    prev.message.role === next.message.role &&
+    prev.message.content === next.message.content
+);

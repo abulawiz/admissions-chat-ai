@@ -48,8 +48,11 @@ const ChatPage = () => {
   }, [conversationId]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: isLoading ? "auto" : "smooth",
+    });
+  }, [messages, isLoading]);
 
   const loadMessages = async (convId: string) => {
     const { data, error } = await supabase
