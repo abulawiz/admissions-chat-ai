@@ -66,12 +66,12 @@ const sections = [
     icon: Calendar,
     title: "Important Dates",
     content: [
-      "JAMB registration: Usually January – February each year",
-      "UTME examination: Typically April – May",
-      "Post-UTME screening: Usually August – October",
-      "Admission list release: September – December",
-      "Registration deadline: Check NSUK portal each session",
-      "Always verify dates on the official NSUK website",
+      "2026 UTME registration: opened 26 January 2026",
+      "2026 UTME examination: scheduled for 16–22 April 2026; check your JAMB slip",
+      "NSUK 2026/2027 screening: reported open until 30 September 2026",
+      "NSUK screening portal: ug.nsuk.edu.ng/application",
+      "2026/2027 screening fee: reported as ₦2,000; verify before payment",
+      "Always verify deadlines and departmental requirements on NSUK and JAMB official portals",
     ],
   },
 ];
@@ -89,6 +89,9 @@ const AdmissionGuide = () => {
           <p className="text-muted-foreground font-body max-w-2xl mx-auto">
             Everything you need to know about gaining admission into Nasarawa State University, Keffi.
           </p>
+          <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left text-sm text-foreground/80">
+            <strong className="text-foreground">2026/2027 status update:</strong> NSUK undergraduate UTME and Direct Entry screening is reported open until 30 September 2026. NSUK must be your first choice, and programme-specific score requirements vary. Confirm the latest notice at <a className="text-primary underline" href="https://ug.nsuk.edu.ng/application" target="_blank" rel="noreferrer">ug.nsuk.edu.ng/application</a> and check JAMB CAPS for admission status.
+          </div>
         </motion.div>
 
         <div className="space-y-8">
