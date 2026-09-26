@@ -17,6 +17,7 @@ const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const FAQs = lazy(() => import("./pages/FAQs"));
 const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPasswordPage />} />
                   <Route path="/faqs" element={<FAQs />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/admin" element={<AdminPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
