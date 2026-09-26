@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, FileText, Users, Settings, ShieldCheck, Upload } from "lucide-react";
+import { FileText, LayoutDashboard, MessageSquare, Send, Settings, Upload, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const BUCKET = "admission-documents";
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const nav = [
   { label: "Overview", icon: LayoutDashboard },
   { label: "Conversations", icon: MessageSquare },
@@ -18,16 +20,21 @@ const nav = [
   { label: "Settings", icon: Settings },
 ];
 
+type Conversation = { id: string; title: string; user: string; time: string };
+
 export default function AdminPage() {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [active, setActive] = useState("Overview");
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [conversations, setConversations] = useState<Array<{ id?: string; title: string; user: string; status?: string; time?: string }>>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [metrics, setMetrics] = useState({ total: 0, applicants: 0, messages: 0, files: 0 });
   const [uploading, setUploading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [email, setEmail] = useState({ to: "", subject: "", message: "" });
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -36,247 +43,118 @@ export default function AdminPage() {
   const loadDashboard = useCallback(async () => {
     if (!user) return;
     setDataLoading(true);
-
     try {
-      // Use paginated file list to avoid listing everything
       const [convRes, msgRes, filesRes] = await Promise.all([
-        supabase
-          .from("conversations")
-          .select("id, title, user_id, updated_at")
-          .order("updated_at", { ascending: false })
-          .limit(100),
+        supabase.from("conversations").select("id, title, user_id, updated_at").order("updated_at", { ascending: false }).limit(100),
         supabase.from("chat_messages").select("id", { count: "exact", head: true }),
-        supabase.storage.from("admission-documents").list(user.id, { limit: 100 }),
+        supabase.storage.from(BUCKET).list(user.id, { limit: 100, offset: 0, sortBy: { column: "name", order: "desc" } }),
       ]);
-
-      const conversationRows = convRes.data ?? [];
-      if (conversationRows.length) {
-        setConversations(
-          conversationRows.slice(0, 8).map((item: any) => ({
-            id: item.id,
-            title: item.title,
-            user: `${item.user_id?.slice ? item.user_id.slice(0, 8) + "…" : item.user_id}`,
-            status: "Open",
-            time: item.updated_at ? new Date(item.updated_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "-",
-          }))
-        );
-      } else setConversations([]);
-
-      setMetrics({
-        total: (conversationRows ?? []).length,
-        applicants: new Set((conversationRows ?? []).map((r: any) => r.user_id)).size,
-        messages: (msgRes.count as number) ?? 0,
-        files: (filesRes.data?.length ?? 0),
-      });
-    } catch (err) {
-      console.error("loadDashboard error", err);
+      if (convRes.error) throw convRes.error;
+      const rows = convRes.data ?? [];
+      setConversations(rows.slice(0, 8).map((item) => ({
+        id: item.id,
+        title: item.title || "Untitled conversation",
+        user: item.user_id ? `${item.user_id.slice(0, 8)}…` : "Unknown",
+        time: item.updated_at ? new Date(item.updated_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "-",
+      })));
+      setMetrics({ total: rows.length, applicants: new Set(rows.map((row) => row.user_id)).size, messages: msgRes.count ?? 0, files: filesRes.data?.length ?? 0 });
+    } catch (error) {
+      console.error("loadDashboard error", error);
       toast.error("Failed to load dashboard data");
     } finally {
       setDataLoading(false);
     }
   }, [user]);
 
-  useEffect(() => {
-    void loadDashboard();
-  }, [loadDashboard]);
+  useEffect(() => { void loadDashboard(); }, [loadDashboard]);
 
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
-      .channel("admin-dashboard-live")
+    const channel = supabase.channel("admin-dashboard-live")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations" }, () => void loadDashboard())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, () => void loadDashboard())
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, () => void loadDashboard())
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "chat_messages" }, () => void loadDashboard())
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, () => void loadDashboard());
+    void channel.subscribe();
+    return () => { void supabase.removeChannel(channel); };
   }, [loadDashboard, user]);
 
-  const filtered = useMemo(
-    () =>
-      conversations.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase()) || item.user.toLowerCase().includes(query.toLowerCase())
-      ),
-    [conversations, query]
-  );
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return conversations;
+    return conversations.filter((item) => item.title.toLowerCase().includes(normalized) || item.user.toLowerCase().includes(normalized));
+  }, [conversations, query]);
 
-  const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file || !user) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast.error("Files must be 10 MB or smaller.");
+      return;
+    }
     setUploading(true);
-
-    const safeName = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-
+    const safeName = `${user.id}/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
     try {
-      const { data, error } = await supabase.storage.from("admission-documents").upload(safeName, file, { upsert: false, contentType: file.type });
-
-      setUploading(false);
-
-      if (error) {
-        // If bucket not found or permission issues, fallback to server-side upload
-        console.warn("client upload error", error);
-        if (error.status === 404 || /bucket/i.test(error.message || "")) {
-          toast.error("Bucket not found or permission denied. Attempting server-side upload...");
-
-          try {
-            // read file as base64
-            const arrayBuffer = await file.arrayBuffer();
-            const base64 = Buffer.from(arrayBuffer).toString("base64");
-            const res = await fetch("/api/admin/upload", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ fileName: safeName, fileType: file.type, contentBase64: base64 }),
-            });
-            const body = await res.json();
-            if (res.ok) {
-              toast.success(`${file.name} uploaded via server.`);
-              void loadDashboard();
-            } else {
-              console.error("server upload failed", body);
-              toast.error("Server-side upload failed: " + (body.error ?? "unknown"));
-            }
-          } catch (e) {
-            console.error("fallback upload failed", e);
-            toast.error("Fallback upload failed");
-          }
-        } else if (error.status === 409) {
-          toast.error("A file with the same name already exists. Rename and try again.");
-        } else {
-          toast.error("Upload failed: " + (error.message ?? "unknown"));
-        }
-      } else {
-        toast.success(`${file.name} uploaded to the knowledge base.`);
+      const { error } = await supabase.storage.from(BUCKET).upload(safeName, file, { upsert: false, contentType: file.type || "application/octet-stream", cacheControl: "3600" });
+      if (!error) {
+        toast.success(`${file.name} uploaded.`);
         void loadDashboard();
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Unexpected error while uploading file");
-      setUploading(false);
+      // Use the authenticated server fallback only when the bucket is unavailable to the browser.
+      if (error.status !== 404 && !/bucket|permission|row-level security/i.test(error.message || "")) throw error;
+      const token = session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const body = new FormData();
+      body.append("file", file);
+      body.append("path", safeName);
+      const response = await fetch("/api/admin/upload", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Server upload failed");
+      toast.success(`${file.name} uploaded.`);
+      void loadDashboard();
+    } catch (error) {
+      console.error("upload error", error);
+      toast.error(error instanceof Error ? error.message : "Upload failed");
     } finally {
-      if (event.target) event.target.value = "";
+      setUploading(false);
     }
   };
 
-  const sendEmail = async () => {
-    // Simple prompt flow to collect email details
-    const to = window.prompt("Recipient email:");
-    if (!to) return;
-    const subject = window.prompt("Subject:", "Message from Admissions Admin") || "";
-    const body = window.prompt("HTML body (simple):", "<p>Hello,</p><p>This is a message from the admissions admin.</p>") || "";
-
+  const handleSendEmail = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!session?.access_token) return toast.error("Your session expired. Please sign in again.");
+    setEmailSending(true);
     try {
-      const res = await fetch("/api/admin/send-email", {
+      const response = await fetch("/api/admin/send-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, subject, html: body }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ to: email.to, subject: email.subject, text: email.message }),
       });
-      if (!res.ok) {
-        const j = await res.json();
-        toast.error("Failed to send email: " + (j?.error ?? res.statusText));
-      } else {
-        toast.success("Email sent");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to send email");
-    }
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Email failed to send");
+      toast.success("Email sent");
+      setEmail({ to: "", subject: "", message: "" });
+      setEmailOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Email failed to send");
+    } finally { setEmailSending(false); }
   };
 
   if (loading || !user) return <div className="min-h-[70vh] flex items-center justify-center"><div className="size-8 rounded-full border-4 border-primary border-t-transparent animate-spin" /></div>;
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#f6f8f7] flex">
-      <aside className={`hidden lg:flex fixed lg:static inset-y-0 left-0 z-40 w-72 bg-primary-dark text-primary-foreground flex-col shadow-xl`}>
-        <div className="h-16 px-6 flex items-center justify-between border-b border-primary-foreground/10"><Link to="/" className="font-display text-lg font-bold">NSUK Admin</Link></div>
-        <div className="p-4 flex-1">
-          <nav className="space-y-2">
-            {nav.map((n) => (
-              <button key={n.label} onClick={() => setActive(n.label)} className={`w-full text-left px-3 py-2 rounded ${active === n.label ? "bg-primary-foreground/10" : ""}`}>
-                {n.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </aside>
-      <main className="flex-1 min-w-0">
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 sm:px-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-semibold">Admin dashboard</h1>
-            <Badge variant="outline">{user.email ?? user.id}</Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="file" onChange={uploadFile} className="hidden" />
-              <Button variant="ghost" size="sm"><Upload className="mr-2" /> Upload</Button>
-            </label>
-            <Button variant="default" size="sm" onClick={sendEmail}>Send email</Button>
-          </div>
-        </header>
-
-        <div className="p-4 sm:p-8 max-w-7xl mx-auto flex flex-col gap-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Total conversations</CardTitle>
-                <CardDescription>{dataLoading ? "—" : metrics.total.toLocaleString()}</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Applicants</CardTitle>
-                <CardDescription>{dataLoading ? "—" : metrics.applicants.toLocaleString()}</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Messages</CardTitle>
-                <CardDescription>{dataLoading ? "—" : metrics.messages.toLocaleString()}</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Files</CardTitle>
-                <CardDescription>{dataLoading ? "—" : metrics.files.toLocaleString()}</CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <div>
-                <CardTitle>Recent conversations</CardTitle>
-                <CardDescription>Monitor applicant support</CardDescription>
-              </div>
-              <div>
-                <Input placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((c) => (
-                    <TableRow key={c.id ?? c.title}>
-                      <TableCell>{c.title}</TableCell>
-                      <TableCell>{c.user}</TableCell>
-                      <TableCell>{c.time}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
-  );
+  return <div className="min-h-[calc(100vh-4rem)] bg-[#f6f8f7] flex">
+    <aside className="hidden lg:flex w-72 shrink-0 bg-primary-dark text-primary-foreground flex-col shadow-xl">
+      <div className="h-16 px-6 flex items-center border-b border-primary-foreground/10"><Link to="/" className="font-display text-lg font-bold">NSUK Admin</Link></div>
+      <nav className="p-4 space-y-2">{nav.map(({ label, icon: Icon }) => <button key={label} onClick={() => setActive(label)} className={`w-full flex items-center gap-3 text-left px-3 py-2 rounded ${active === label ? "bg-primary-foreground/10" : ""}`}><Icon className="size-4" />{label}</button>)}</nav>
+    </aside>
+    <main className="flex-1 min-w-0">
+      <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 sm:px-8 gap-4"><div className="flex items-center gap-3 min-w-0"><h1 className="text-lg font-semibold">Admin dashboard</h1><Badge variant="outline" className="truncate hidden sm:inline-flex">{user.email ?? user.id}</Badge></div><div className="flex items-center gap-2"><input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.txt,.md" onChange={uploadFile} className="hidden" /><Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}><Upload className="mr-2 size-4" />{uploading ? "Uploading…" : "Upload"}</Button><Button size="sm" onClick={() => setEmailOpen(true)}><Send className="mr-2 size-4" />Send email</Button></div></header>
+      <div className="p-4 sm:p-8 max-w-7xl mx-auto flex flex-col gap-6">
+        {emailOpen && <Card><CardHeader><CardTitle>Send email</CardTitle><CardDescription>Send a message through the configured email provider.</CardDescription></CardHeader><CardContent><form onSubmit={handleSendEmail} className="space-y-3"><Input type="email" required placeholder="Recipient email" value={email.to} onChange={(e) => setEmail({ ...email, to: e.target.value })} /><Input required placeholder="Subject" value={email.subject} onChange={(e) => setEmail({ ...email, subject: e.target.value })} /><textarea required minLength={1} rows={5} placeholder="Message" value={email.message} onChange={(e) => setEmail({ ...email, message: e.target.value })} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" /><div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={() => setEmailOpen(false)}>Cancel</Button><Button type="submit" disabled={emailSending}>{emailSending ? "Sending…" : "Send email"}</Button></div></form></CardContent></Card>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">{[["Total conversations", metrics.total], ["Applicants", metrics.applicants], ["Messages", metrics.messages], ["Files", metrics.files]].map(([label, value]) => <Card key={label as string}><CardHeader><CardTitle>{label}</CardTitle><CardDescription>{dataLoading ? "—" : Number(value).toLocaleString()}</CardDescription></CardHeader></Card>)}</div>
+        <Card><CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><CardTitle>Recent conversations</CardTitle><CardDescription>Monitor applicant support</CardDescription></div><Input className="sm:max-w-xs" placeholder="Search conversations" value={query} onChange={(e) => setQuery(e.target.value)} /></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Title</TableHead><TableHead>User</TableHead><TableHead>Time</TableHead></TableRow></TableHeader><TableBody>{filtered.map((conversation) => <TableRow key={conversation.id}><TableCell>{conversation.title}</TableCell><TableCell>{conversation.user}</TableCell><TableCell>{conversation.time}</TableCell></TableRow>)}{!dataLoading && filtered.length === 0 && <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">No conversations found.</TableCell></TableRow>}</TableBody></Table></CardContent></Card>
+      </div>
+    </main>
+  </div>;
 }

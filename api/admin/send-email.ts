@@ -1,44 +1,21 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { requireAdmin } from "./_auth";
 
-// This endpoint proxies sending email via SendGrid. Configure SENDGRID_API_KEY and EMAIL_FROM in your environment.
-// It expects JSON: { to: string, subject: string, html: string }
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const maxMessageLength = 100_000;
 
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  const { to, subject, html } = req.body ?? {};
-  if (!to || !subject || !html) return res.status(400).json({ error: 'Missing to, subject, or html' });
-
-  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  const EMAIL_FROM = process.env.EMAIL_FROM;
-  if (!SENDGRID_API_KEY || !EMAIL_FROM) return res.status(500).json({ error: 'Email service not configured' });
-
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!await requireAdmin(req, res)) return;
+  const { to, subject, text } = req.body ?? {};
+  if (typeof to !== "string" || !emailPattern.test(to) || typeof subject !== "string" || !subject.trim() || typeof text !== "string" || !text.trim()) return res.status(400).json({ error: "Valid recipient, subject, and message are required" });
+  if (subject.length > 200 || text.length > maxMessageLength) return res.status(400).json({ error: "Subject or message is too long" });
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  if (!apiKey || !from) return res.status(503).json({ error: "Email service is not configured" });
   try {
-    const payload = {
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: EMAIL_FROM },
-      subject,
-      content: [{ type: 'text/html', value: html }],
-    };
-
-    const r = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!r.ok) {
-      const text = await r.text();
-      console.error('sendgrid error', r.status, text);
-      return res.status(500).json({ error: 'SendGrid error', details: text });
-    }
-
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ personalizations: [{ to: [{ email: to.trim() }] }], from: { email: from }, subject: subject.trim(), content: [{ type: "text/plain", value: text }] }) });
+    if (!response.ok) { console.error("SendGrid error", response.status, await response.text()); return res.status(502).json({ error: "Email provider rejected the message" }); }
     return res.status(200).json({ ok: true });
-  } catch (err: any) {
-    console.error('send-email handler error', err);
-    return res.status(500).json({ error: err.message ?? 'send failed' });
-  }
+  } catch (error) { console.error("send-email error", error); return res.status(502).json({ error: "Email provider unavailable" }); }
 }
