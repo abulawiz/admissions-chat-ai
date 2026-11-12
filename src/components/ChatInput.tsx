@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 
-type SpeechRecognitionInstance = { continuous: boolean; interimResults: boolean; lang: string; start: () => void; stop: () => void; onresult: ((event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
+type SpeechRecognitionResult = { [key: number]: { transcript: string }; isFinal: boolean };
+type SpeechRecognitionResults = { [key: number]: SpeechRecognitionResult; length: number };
+type SpeechRecognitionInstance = { continuous: boolean; interimResults: boolean; lang: string; start: () => void; stop: () => void; onresult: ((event: { results: SpeechRecognitionResults }) => void) | null; onend: (() => void) | null; onerror: ((event: { error: string }) => void) | null };
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
 
 declare global { interface Window { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor } }
