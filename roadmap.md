@@ -1,0 +1,3 @@
+- [x] Correct the contact page using verified NSUK contact channels; remove placeholder phone and office hours.
+- [x] Improve login troubleshooting: trim email input and explain the password-reset option when credentials are rejected.
+- [ ] Confirm an actual sign-in after the user resets their password; the preview logs show invalid credentials, and inbox access is unavailable here.

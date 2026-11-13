@@ -20,9 +20,10 @@ const AuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const normalizedEmail = email.trim();
 
     if (mode === "forgot") {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) {
@@ -31,15 +32,19 @@ const AuthPage = () => {
         toast.success("Password reset link sent! Check your email.");
       }
     } else if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (error) {
-        toast.error(error.message);
+        toast.error(
+          error.message.toLowerCase().includes("invalid login credentials")
+            ? "Email or password is incorrect. Check your details or use “Forgot your password?” to reset it."
+            : error.message,
+        );
       } else {
         navigate("/chat");
       }
     } else {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password,
         options: { emailRedirectTo: window.location.origin },
       });
