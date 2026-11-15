@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Lock, ArrowRight, CheckCircle } from "lucide-react";
+import { Lock, ArrowRight, CheckCircle, Eye, EyeOff } from "lucide-react";
 import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
@@ -75,14 +77,25 @@ const ResetPasswordPage = () => {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="pl-10"
+                className="pl-10 pr-10"
                 minLength={6}
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={showPassword ? "Hide new password" : "Show new password"}
+                title={showPassword ? "Hide new password" : "Show new password"}
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+              >
+                {showPassword ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
           </div>
 
@@ -92,14 +105,25 @@ const ResetPasswordPage = () => {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="pl-10"
+                className="pl-10 pr-10"
                 minLength={6}
                 required
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"}
+                title={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"}
+                onClick={() => setShowConfirmPassword((visible) => !visible)}
+                className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+              >
+                {showConfirmPassword ? <EyeOff /> : <Eye />}
+              </Button>
             </div>
           </div>
 

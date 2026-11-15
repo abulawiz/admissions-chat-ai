@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowRight, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import nsukLogo from "@/assets/nsuk-logo.jpg";
 
 type Mode = "login" | "signup" | "forgot";
@@ -14,47 +14,48 @@ const AuthPage = () => {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const normalizedEmail = email.trim();
 
-    if (mode === "forgot") {
-      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
+    try {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
         toast.success("Password reset link sent! Check your email.");
-      }
-    } else if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-      if (error) {
-        toast.error(
-          error.message.toLowerCase().includes("invalid login credentials")
-            ? "Email or password is incorrect. Check your details or use “Forgot your password?” to reset it."
-            : error.message,
-        );
+      } else if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+        if (error) {
+          toast.error(
+            error.message.toLowerCase().includes("invalid login credentials")
+              ? "Email or password is incorrect. Check your details or use “Forgot your password?” to reset it."
+              : error.message,
+          );
+          return;
+        }
+        navigate(searchParams.get("next") === "/admin" ? "/admin" : "/chat");
       } else {
-        navigate("/chat");
-      }
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
+        const { error } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
         toast.success("Check your email to confirm your account before signing in.");
       }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to complete this request. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const titles: Record<Mode, { heading: string; sub: string }> = {
@@ -102,14 +103,25 @@ const AuthPage = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-10"
+                  className="pl-10 pr-10"
                   minLength={6}
                   required
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </Button>
               </div>
             </div>
           )}
@@ -118,7 +130,7 @@ const AuthPage = () => {
             <div className="text-right">
               <button
                 type="button"
-                onClick={() => setMode("forgot")}
+                onClick={() => { setMode("forgot"); setShowPassword(false); }}
                 className="text-xs text-primary hover:underline font-body"
               >
                 Forgot your password?
@@ -141,7 +153,7 @@ const AuthPage = () => {
             <p className="text-center text-sm text-muted-foreground font-body">
               <button
                 type="button"
-                onClick={() => setMode("login")}
+                onClick={() => { setMode("login"); setShowPassword(false); }}
                 className="text-primary font-medium hover:underline inline-flex items-center gap-1"
               >
                 <ArrowLeft className="w-3 h-3" /> Back to Sign In
@@ -152,7 +164,7 @@ const AuthPage = () => {
               {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
                 type="button"
-                onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                onClick={() => { setMode(mode === "login" ? "signup" : "login"); setShowPassword(false); }}
                 className="text-primary font-medium hover:underline"
               >
                 {mode === "login" ? "Sign Up" : "Sign In"}
