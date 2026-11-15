@@ -1,3 +1,4 @@
 - [x] Correct the contact page using verified NSUK contact channels; remove placeholder phone and office hours.
-- [x] Improve login troubleshooting: trim email input and explain the password-reset option when credentials are rejected.
-- [ ] Confirm an actual sign-in after the user resets their password; the preview logs show invalid credentials, and inbox access is unavailable here.
+- [ ] Add show/hide password controls and complete reliable login and password recovery behavior.
+- [ ] Make the admin sign-in and admin-only access flow functional using the existing secure role checks.
+- [ ] Confirm actual sign-in after the user provides valid credentials or resets their password; inbox access is unavailable here.
