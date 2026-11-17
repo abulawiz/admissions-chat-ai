@@ -1,4 +1,5 @@
 - [x] Correct the contact page using verified NSUK contact channels; remove placeholder phone and office hours.
 - [ ] Add show/hide password controls and complete reliable login and password recovery behavior.
 - [ ] Make the admin sign-in and admin-only access flow functional using the existing secure role checks.
+- [ ] Diagnose and fix the POST-UTME reminder subscription and notification flow.
 - [ ] Confirm actual sign-in after the user provides valid credentials or resets their password; inbox access is unavailable here.
